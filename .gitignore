@@ -1,0 +1,8 @@
+.*.sw?
+*.bak
+*.tar.gz
+Build
+MYMETA.*
+blib
+_build
+lib/WL.pm

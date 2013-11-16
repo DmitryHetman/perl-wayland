@@ -1,0 +1,10 @@
+bin/wl-draw.pl		Perl Wayland demo
+bin/wl-scanner.pl	Generate Perl bindings for Wayland protocol
+Build.PL		Build script
+lib/WL.pm		Perl Wayland protocol binding
+lib/WL/Base.pm		Base class for Wayland objects
+lib/WL/Connection.pm	Estabilitsh connection for Wayland protocol
+protocol/wayland.xml	Protocol specification from Wayland distribution
+MANIFEST		This list of files
+META.yml		Package metadata
+META.json		Package metadata
