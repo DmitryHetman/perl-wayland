@@ -39,7 +39,7 @@ YOLO
 	module_name => 'WL',
 	license => 'open_source',
 	dist_author => 'Lubomir Rintel <lkundrak@v3.sk>',
-	dist_abstract => 'Coprosim',
+	dist_abstract => 'Perl Wayland protocol binding',
 	dist_version => 0.90,
 	meta_merge => {
 		resources => {
