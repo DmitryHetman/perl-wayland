@@ -186,7 +186,7 @@ sub process_protocol
 
 	print "package WL;\n";
 	print "\n";
-	print "our \$VERSION = 0.90;\n";
+	print "our \$VERSION = 0.91;\n";
 	print "\n";
 
 	foreach my $interface ($protocol->{interface}('@')) {
