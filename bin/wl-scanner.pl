@@ -265,7 +265,7 @@ L<http://wayland.freedesktop.org/> -- Wayland project web site
 
 ${P}item *
 
-L<wl-demo.pl> -- Example Wayland client
+L<wl-draw.pl> -- Example Wayland client
 
 ${P}item *
 
