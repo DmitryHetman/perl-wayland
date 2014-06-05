@@ -13,19 +13,29 @@ code => <<'YOLO'
 
 		$self->depends_on ('build');
 
-		my $protocol = $self->args ('protocol') ||
-			$self->base_dir.'/protocol/wayland.xml';
+		my $protocol = $self->args ('protocol') || [
+			$self->base_dir.'/protocol/wayland.xml',
+			$self->base_dir.'/protocol/gtk-shell.xml',
+			$self->base_dir.'/protocol/xdg-shell.xml',
+			$self->base_dir.'/protocol/workspaces.xml',
+			$self->base_dir.'/protocol/text.xml',
+			$self->base_dir.'/protocol/wayland-test.xml',
+			$self->base_dir.'/protocol/desktop-shell.xml',
+			$self->base_dir.'/protocol/fullscreen-shell.xml',
+			$self->base_dir.'/protocol/text-cursor-position.xml',
+			$self->base_dir.'/protocol/input-method.xml',
+			$self->base_dir.'/protocol/scaler.xml',
+			$self->base_dir.'/protocol/screenshooter.xml',
+		];
 
-		open (my $oldout, ">&STDOUT");
-		close STDOUT;
-		open (STDOUT, '>', $self->base_dir.'/lib/WL.pm') or die $!;
-		system ($self->perl,
-			'-I'.$self->blib.'/lib',
-			$self->blib.'/script/wl-scanner.pl',
-			$protocol);
-		close STDOUT;
-		open (STDOUT, '>&', $oldout);
-		die 'Failed to generate protocol module' if $?;
+		foreach my $p (@$protocol) {
+			system ($self->perl,
+				'-I'.$self->blib.'/lib',
+				$self->blib.'/script/wl-scanner.pl',
+				$p, $self->base_dir.'/lib');
+
+			die 'Failed to generate protocol module' if $?;
+		}
 	}
 
 	sub ACTION_dist {
@@ -64,7 +74,7 @@ YOLO
 	],
 	get_options => {
 		'protocol' => {
-			type => '=s'
+			type => '=s@'
 		},
 	},
 );

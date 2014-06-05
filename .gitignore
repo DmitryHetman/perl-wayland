@@ -6,3 +6,16 @@ MYMETA.*
 blib
 _build
 lib/WL.pm
+lib/WL/input_method.pm
+lib/WL/wl_test.pm
+lib/WL/xdg_shell.pm
+lib/WL/screenshooter.pm
+lib/WL/text_cursor_position.pm
+lib/WL/desktop.pm
+lib/WL/workspaces.pm
+lib/WL/scaler.pm
+lib/WL/fullscreen_shell.pm
+lib/WL/text.pm
+lib/WL/gtk.pm
+lib/WL/Base.pm
+lib/WL/Connection.pm
