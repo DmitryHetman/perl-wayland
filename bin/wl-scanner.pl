@@ -207,7 +207,7 @@ sub process_protocol
 
 	op "package $package_name;\n";
 	op "\n";
-	op "our \$VERSION = 0.91;\n";
+	op "our \$VERSION = 0.92;\n";
 	op "\n";
 
 	foreach my $interface ($protocol->{interface}('@')) {

@@ -50,7 +50,7 @@ YOLO
 	license => 'open_source',
 	dist_author => 'Lubomir Rintel <lkundrak@v3.sk>',
 	dist_abstract => 'Perl Wayland protocol binding',
-	dist_version => 0.91,
+	dist_version => 0.92,
 	meta_merge => {
 		resources => {
 			bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=WL',
