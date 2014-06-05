@@ -7,12 +7,15 @@ wl-scanner.pl - Generate Perl bindings for Wayland protocol
 =head1 SYNOPSIS
 
 B<wl-draw.pl>
-[<wayland.xml>]
+[<protocol.xml>]
+[<output_dir>/]
 
 =head1 DESCRIPTION
 
 This tool processes Wayland protocol specification and generates L<WL::Base>
 subclasses with wrappers for requests, event processing and constants for enums.
+
+Output is to STDOUT or specified directory.
 
 =cut
 
@@ -22,6 +25,22 @@ use warnings;
 use XML::Smart;
 
 our $package_name;
+our $output_file;
+
+# Output routines
+sub op
+{
+	if ($output_file) {
+		print $output_file @_;
+	} else {
+		print @_;
+	}
+}
+
+sub opf
+{
+	op sprintf shift, @_;
+}
 
 # Information for type marshalling/unmarshalling:
 # [ <routine returning pack string and code for fetching the value from
@@ -61,12 +80,12 @@ sub process_request
 {
 	my $request = shift;
 
-	print "sub $request->{name}\n";
-	print "{\n";
-	print "\tmy \$self = shift;\n";
-	print "\tmy \$file;\n";
-	print "\tmy \$retval;\n";
-	print "\n";
+	op "sub $request->{name}\n";
+	op "{\n";
+	op "\tmy \$self = shift;\n";
+	op "\tmy \$file;\n";
+	op "\tmy \$retval;\n";
+	op "\n";
 
 	my @pack;
 	my @map;
@@ -78,13 +97,13 @@ sub process_request
 	my $pack = join ' ', @pack;
 	my $map = join ",\n\t\t", @map;
 
-	printf "\t\$self->call (REQUEST_%s, pack ('%s',\n\t\t%s), \$file);\n",
+	opf "\t\$self->call (REQUEST_%s, pack ('%s',\n\t\t%s), \$file);\n",
 		uc ($request->{name}), $pack, $map;
-	print "\n";
+	op "\n";
 
-	print "\treturn \$retval;\n";
-	print "}\n";
-	print "\n";
+	op "\treturn \$retval;\n";
+	op "}\n";
+	op "\n";
 }
 
 sub process_event
@@ -101,8 +120,8 @@ sub process_event
 	my $pack = join ' ', @pack;
 	my $map = join ",\n\t\t\t", @map;
 
-	print "\t\t\@_ = unpack ('$pack', shift);\n" if $pack;
-	print "\t\treturn \$self->$event->{name} ($map);\n";
+	op "\t\t\@_ = unpack ('$pack', shift);\n" if $pack;
+	op "\t\treturn \$self->$event->{name} ($map);\n";
 }
 
 sub process_enum
@@ -110,7 +129,7 @@ sub process_enum
 	my $enum = shift;
 
 	foreach my $entry ($enum->{entry}('@')) {
-		printf "use constant %s => %s;\n",
+		opf "use constant %s => %s;\n",
 			uc ($enum->{name}.'_'.$entry->{name}),
 			$entry->{value};
 	}
@@ -121,22 +140,22 @@ sub process_interface
 	my $interface = shift;
 	my $opcode;
 
-	printf "package WL::$interface->{name};\n";
-	print "\n";
-	print "our \@ISA = qw/WL::Base/;\n";
-	print "our \$VERSION = $interface->{version};\n";
-	print "our \$INTERFACE = '$interface->{name}';\n";
-	print "\n";
+	opf "package WL::$interface->{name};\n";
+	op "\n";
+	op "our \@ISA = qw/WL::Base/;\n";
+	op "our \$VERSION = $interface->{version};\n";
+	op "our \$INTERFACE = '$interface->{name}';\n";
+	op "\n";
 
 	my @requests = $interface->{request}('@');
 	if (@requests) {
 		$opcode = 0;
-		print "# Requests\n";
+		op "# Requests\n";
 		foreach my $request (@requests) {
-			printf "use constant REQUEST_%s => %d;\n",
+			opf "use constant REQUEST_%s => %d;\n",
 				uc ($request->{name}), $opcode++;
 		}
-		print "\n";
+		op "\n";
 		foreach my $request (@requests) {
 			process_request ($request);
 		}
@@ -145,40 +164,40 @@ sub process_interface
 	my @events = $interface->{event}('@');
 	if (@events) {
 		$opcode = 0;
-		print "# Events\n";
+		op "# Events\n";
 		foreach my $event (@events) {
-			printf "use constant EVENT_%s => %d;\n",
+			opf "use constant EVENT_%s => %d;\n",
 				uc ($event->{name}), $opcode++;
 		}
 
-		print "\n";
-		print "sub callback\n";
-		print "{\n";
-		print "\tmy \$self = shift;\n";
-		print "\tmy \$opcode = shift;\n";
-		print "\n";
+		op "\n";
+		op "sub callback\n";
+		op "{\n";
+		op "\tmy \$self = shift;\n";
+		op "\tmy \$opcode = shift;\n";
+		op "\n";
 
-		print "\t";
+		op "\t";
 		foreach my $event (@events) {
-			printf "if (\$opcode == EVENT_%s) {\n", uc ($event->{name});
+			opf "if (\$opcode == EVENT_%s) {\n", uc ($event->{name});
 			process_event ($event);
-			print "\t} els";
+			op "\t} els";
 		}
-		print "e {\n";
-		print "\t\tdie 'Bad opcode';\n";
-		print "\t}\n";
+		op "e {\n";
+		op "\t\tdie 'Bad opcode';\n";
+		op "\t}\n";
 
-		print "}\n";
-		print "\n";
+		op "}\n";
+		op "\n";
 	}
 
 	my @enums = $interface->{enum}('@');
 	if (@enums) {
-		print "# Enums\n";
+		op "# Enums\n";
 		foreach my $enum (@enums) {
 			process_enum ($enum);
 		}
-		print "\n";
+		op "\n";
 	}
 }
 
@@ -186,41 +205,51 @@ sub process_protocol
 {
 	my $protocol = shift;
 
-	print "package $package_name;\n";
-	print "\n";
-	print "our \$VERSION = 0.91;\n";
-	print "\n";
+	op "package $package_name;\n";
+	op "\n";
+	op "our \$VERSION = 0.91;\n";
+	op "\n";
 
 	foreach my $interface ($protocol->{interface}('@')) {
 		process_interface ($interface);
 	}
 }
 
-my $source = shift @ARGV || 'wayland.xml';
+my $file = shift @ARGV;
+my $dir = shift @ARGV || '.';
+open (my $source, '<', $file || 'wayland.xml')
+	or die "Cannot open input file: $!";
 my $spec = new XML::Smart ($source);
 my $protocol_name = $spec->{protocol}{name};
 if ($protocol_name eq 'wayland') {
-	$package_name = $spec->{protocol}{name};
+	$package_name = 'WL';
 } else {
 	$package_name = 'WL::'.$spec->{protocol}{name};
 }
 
-print "# DO NOT EDIT, PRETTY PLEASE!\n";
-print "# This file is automatically generated by wl-scanner.pl\n";
-print "#\n";
-print "\n";
-print "use strict;\n";
-print "use warnings;\n";
-print "use utf8;\n";
-print "\n";
-print "=encoding utf8\n";
-print "=cut\n";
+if ($dir) {
+	my $fname = "$dir/$package_name.pm";
+	$fname =~ s/::/\//g;
+	open ($output_file, '>', $fname)
+		or die "$fname: $!";
+}
+
+op "# DO NOT EDIT, PRETTY PLEASE!\n";
+op "# This file is automatically generated by wl-scanner.pl\n";
+op "#\n";
+op "\n";
+op "use strict;\n";
+op "use warnings;\n";
+op "use utf8;\n";
+op "\n";
+op "=encoding utf8\n";
+op "=cut\n";
 
 # Trick POD parser so that it does not consider this to be a documentation for
 # the tool itself.
 my $P = '=';
 
-print <<POD;
+op <<POD;
 
 ${P}head1 NAME
 
@@ -255,7 +284,7 @@ POD
 
 process_protocol ($spec->{protocol});
 
-print <<POD;
+op <<POD;
 
 ${P}head1 BUGS
 
@@ -299,18 +328,18 @@ POD
 
 # XML::Smart recodes this to ISO-8859 for some weird reason,
 # therefore we won't use $spec->{protocol}{copyright} here.
-open (my $file, '<', $source);
-my @copyright = map { /<copyright>/ .. /<\/copyright>/ ? $_ : () } <$file>;
+seek $source, 0, 0;
+my @copyright = map { /<copyright>/ .. /<\/copyright>/ ? $_ : () } <$source>;
 shift @copyright;
 pop @copyright;
 map { s/\s*(.*\S?)\s*/  $1\n/ } @copyright;
 
 if (@copyright) {
-	print "\nCopyright notice from the protocol definition file:\n\n";
-	print @copyright;
+	op "\nCopyright notice from the protocol definition file:\n\n";
+	op @copyright;
 }
 
-print <<POD;
+op <<POD;
 
 ${P}head1 AUTHORS
 
