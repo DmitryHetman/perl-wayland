@@ -93,6 +93,9 @@ $shell_surface->{'WL::wl_shell_surface::ping'} = sub {
 	my $serial = shift;
 	$self->pong ($serial);
 };
+$shell_surface->{'WL::wl_shell_surface::configure'} = sub {
+	# Just ignore this, we don't support resizes
+};
 $shell_surface->set_title ("Hello from Perl!");
 $shell_surface->set_toplevel ();
 
